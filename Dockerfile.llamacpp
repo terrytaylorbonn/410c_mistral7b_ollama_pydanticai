@@ -1,0 +1,21 @@
+FROM ubuntu:24.04
+
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y git build-essential cmake wget ca-certificates libcurl4-openssl-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# Clone llama.cpp
+RUN git clone https://github.com/ggerganov/llama.cpp.git /llama.cpp
+WORKDIR /llama.cpp
+
+# Build llama.cpp using CMake
+RUN cmake -B build . && cmake --build build --config Release -- -j $(nproc)
+
+# Download TinyLlama model (example: Q4_K_M quantization)
+WORKDIR /
+RUN wget https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf -O tinyllama.gguf
+
+# Set entrypoint to run llama.cpp with the model
+WORKDIR /llama.cpp
+ENTRYPOINT ["./build/bin/llama-cli", "-m", "/tinyllama.gguf"]

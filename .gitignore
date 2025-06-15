@@ -1,0 +1,41 @@
+llamafile-0.9.3
+
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+*.pyo
+*.pyd
+*.pdb
+*.so
+*.dll
+*.log
+*.sqlite3
+*.db
+*.env
+.env*
+.venv/
+venv/
+ENV/
+.Python
+
+# VSCode
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.bak
+*.swp
+*.tmp
+
+# Ollama
+ollama_models/
+ollama_cache/
