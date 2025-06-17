@@ -20,6 +20,16 @@ __pycache__/
 venv/
 ENV/
 .Python
+.venvUV/
+.venv311/
+google-chrome-stable_current_amd64.deb
+.env/
+env/
+build/
+dist/
+*.coverage
+.coverage
+htmlcov/
 
 # VSCode
 .vscode/
@@ -35,6 +45,13 @@ Thumbs.db
 *.bak
 *.swp
 *.tmp
+
+# Selenium/ChromeDriver
+chromedriver.log
+
+# Data/output
+/data/
+output/
 
 # Ollama
 ollama_models/
