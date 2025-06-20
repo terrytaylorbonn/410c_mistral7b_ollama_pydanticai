@@ -1,6 +1,7 @@
 """
-Simplified RAG loader for deployment environments without Ollama
-Uses basic text similarity and TF-IDF for document matching
+Ultra-simplified RAG loader for deployment environments
+Uses only basic Python libraries - no heavy ML dependencies
+Compatible with any Python 3.8+ environment
 """
 
 import os
@@ -8,18 +9,16 @@ import json
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 import time
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+import re
+import math
+from collections import Counter
 
-class SimpleRAGSystem:
-    """Simplified RAG system that works without heavy ML dependencies"""
+class UltraSimpleRAGSystem:
+    """Ultra-simple RAG system using only basic Python libraries"""
     
     def __init__(self, data_dir: str = "./data"):
         self.data_dir = Path(data_dir)
         self.documents = []
-        self.vectorizer = None
-        self.tfidf_matrix = None
         self.is_initialized = False
         
     def load_documents(self) -> List[Dict[str, Any]]:
@@ -63,76 +62,68 @@ class SimpleRAGSystem:
         print(f"Loaded {len(documents)} documents")
         return documents
     
-    def initialize_vectorizer(self):
-        """Initialize the TF-IDF vectorizer with documents"""
+    def simple_tokenize(self, text: str) -> List[str]:
+        """Simple tokenization using regex"""
+        # Convert to lowercase and extract words
+        words = re.findall(r'\b\w+\b', text.lower())
+        # Remove common stop words
+        stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'should', 'could', 'can', 'may', 'might', 'must', 'shall', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them'}
+        return [word for word in words if word not in stop_words and len(word) > 2]
+    
+    def calculate_similarity(self, query_words: List[str], doc_words: List[str]) -> float:
+        """Calculate simple word overlap similarity"""
+        if not query_words or not doc_words:
+            return 0.0
+        
+        query_set = set(query_words)
+        doc_set = set(doc_words)
+        
+        # Calculate Jaccard similarity
+        intersection = len(query_set.intersection(doc_set))
+        union = len(query_set.union(doc_set))
+        
+        if union == 0:
+            return 0.0
+        
+        jaccard = intersection / union
+        
+        # Boost score for documents with more query word occurrences
+        doc_counter = Counter(doc_words)
+        query_matches = sum(doc_counter[word] for word in query_words if word in doc_counter)
+        boost = min(query_matches / len(query_words), 2.0)  # Cap boost at 2x
+        
+        return jaccard * boost
+    
+    def search_documents(self, query: str, top_k: int = 3) -> List[Dict[str, Any]]:
+        """Search documents using simple word matching"""
         if not self.documents:
             self.documents = self.load_documents()
             
         if not self.documents:
-            print("No documents found to initialize vectorizer")
-            return
-            
-        # Extract text content for vectorization
-        texts = [doc["content"] for doc in self.documents]
-        
-        # Initialize and fit TF-IDF vectorizer
-        self.vectorizer = TfidfVectorizer(
-            max_features=1000,  # Limit features for deployment
-            stop_words='english',
-            ngram_range=(1, 2),  # Include bigrams
-            max_df=0.95,  # Ignore very common terms
-            min_df=1  # Include all terms that appear at least once
-        )
-        
-        try:
-            self.tfidf_matrix = self.vectorizer.fit_transform(texts)
-            self.is_initialized = True
-            print(f"Vectorizer initialized with {len(texts)} documents")
-        except Exception as e:
-            print(f"Error initializing vectorizer: {e}")
-    
-    def search_documents(self, query: str, top_k: int = 3) -> List[Dict[str, Any]]:
-        """Search documents using TF-IDF similarity"""
-        if not self.is_initialized:
-            self.initialize_vectorizer()
-            
-        if not self.is_initialized:
             return []
             
-        try:
-            # Transform query using the same vectorizer
-            query_vector = self.vectorizer.transform([query])
+        query_words = self.simple_tokenize(query)
+        if not query_words:
+            return []
+        
+        results = []
+        
+        for doc in self.documents:
+            doc_words = self.simple_tokenize(doc["content"])
+            similarity = self.calculate_similarity(query_words, doc_words)
             
-            # Calculate cosine similarity
-            similarities = cosine_similarity(query_vector, self.tfidf_matrix).flatten()
-            
-            # Get top-k most similar documents (lower threshold)
-            top_indices = np.argsort(similarities)[::-1][:top_k]
-            
-            results = []
-            for idx in top_indices:
-                # Lower threshold to include more results
-                if similarities[idx] > 0.001:  # Very low threshold
-                    results.append({
-                        "content": self.documents[idx]["content"],
-                        "metadata": self.documents[idx]["metadata"],
-                        "score": float(similarities[idx])
-                    })
-            
-            # If no results, try with the top document regardless of score
-            if not results and len(self.documents) > 0:
-                best_idx = np.argmax(similarities)
+            if similarity > 0:
                 results.append({
-                    "content": self.documents[best_idx]["content"],
-                    "metadata": self.documents[best_idx]["metadata"],
-                    "score": float(similarities[best_idx])
+                    "content": doc["content"],
+                    "metadata": doc["metadata"],
+                    "score": similarity
                 })
-            
-            return results
-            
-        except Exception as e:
-            print(f"Error searching documents: {e}")
-            return []
+        
+        # Sort by similarity score
+        results.sort(key=lambda x: x["score"], reverse=True)
+        
+        # Return top-k results
+        return results[:top_k]
     
     def generate_answer(self, query: str, relevant_docs: List[Dict[str, Any]]) -> str:
         """Generate a simple answer based on relevant documents"""
@@ -141,60 +132,52 @@ class SimpleRAGSystem:
         
         # Simple answer generation - combine relevant snippets
         answer_parts = []
+        query_words = self.simple_tokenize(query)
         
         for doc in relevant_docs[:3]:  # Use top 3 documents
             content = doc["content"]
             source = doc["metadata"]["source"]
             
-            # Extract relevant snippet (first 200 characters around query terms)
-            query_words = query.lower().split()
-            content_lower = content.lower()
+            # Find sentences containing query words
+            sentences = re.split(r'[.!?]+', content)
+            relevant_sentences = []
             
-            # Find best position in content
-            best_pos = 0
-            best_score = 0
+            for sentence in sentences:
+                sentence = sentence.strip()
+                if len(sentence) > 20:  # Skip very short sentences
+                    sentence_words = self.simple_tokenize(sentence)
+                    if any(word in sentence_words for word in query_words):
+                        relevant_sentences.append(sentence)
             
-            for word in query_words:
-                pos = content_lower.find(word)
-                if pos != -1:
-                    # Count query words in surrounding context
-                    start = max(0, pos - 100)
-                    end = min(len(content), pos + 100)
-                    context = content_lower[start:end]
-                    score = sum(1 for w in query_words if w in context)
-                    if score > best_score:
-                        best_score = score
-                        best_pos = pos
-            
-            # Extract snippet
-            start = max(0, best_pos - 100)
-            end = min(len(content), best_pos + 200)
-            snippet = content[start:end].strip()
-            
-            if snippet:
-                answer_parts.append(f"From {source}: {snippet}")
+            # Take the best sentence(s)
+            if relevant_sentences:
+                best_sentence = relevant_sentences[0]  # First matching sentence
+                answer_parts.append(f"From {source}: {best_sentence}")
         
         if answer_parts:
             answer = "Based on the available documents:\n\n" + "\n\n".join(answer_parts)
         else:
-            answer = "I found some relevant documents but couldn't extract specific information to answer your query."
+            # Fallback to first part of most relevant document
+            doc = relevant_docs[0]
+            content_preview = doc["content"][:300] + "..." if len(doc["content"]) > 300 else doc["content"]
+            answer = f"From {doc['metadata']['source']}: {content_preview}"
         
         return answer
 
 # Global instance for the RAG system
 _rag_system = None
 
-def get_rag_system() -> SimpleRAGSystem:
+def get_rag_system() -> UltraSimpleRAGSystem:
     """Get or create the global RAG system instance"""
     global _rag_system
     if _rag_system is None:
-        _rag_system = SimpleRAGSystem()
+        _rag_system = UltraSimpleRAGSystem()
     return _rag_system
 
 def load_and_query_documents(query: str, data_dir: str = "./data", top_k: int = 3) -> Dict[str, Any]:
     """
     Main function compatible with existing code
-    Load documents and query them using simple RAG
+    Load documents and query them using ultra-simple RAG
     """
     start_time = time.time()
     
@@ -203,7 +186,6 @@ def load_and_query_documents(query: str, data_dir: str = "./data", top_k: int = 
     # Update data directory if different
     if str(rag_system.data_dir) != data_dir:
         rag_system.data_dir = Path(data_dir)
-        rag_system.is_initialized = False
     
     # Search for relevant documents
     relevant_docs = rag_system.search_documents(query, top_k)
@@ -217,7 +199,7 @@ def load_and_query_documents(query: str, data_dir: str = "./data", top_k: int = 
         "answer": answer,
         "sources": relevant_docs,
         "processing_time": processing_time,
-        "model_used": "simple_tfidf",
+        "model_used": "ultra_simple_word_matching",
         "query": query
     }
 
