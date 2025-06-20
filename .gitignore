@@ -1,58 +1,182 @@
-llamafile-0.9.3
-
-
 # Python
 __pycache__/
 *.py[cod]
-*.egg-info/
-*.egg
-*.pyo
-*.pyd
-*.pdb
+*$py.class
 *.so
-*.dll
-*.log
-*.sqlite3
-*.db
-*.env
-.env*
-.venv/
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
 venv/
 ENV/
-.Python
+env.bak/
+venv.bak/
 .venvUV/
 .venv311/
-google-chrome-stable_current_amd64.deb
-.env/
-env/
-build/
-dist/
-*.coverage
-.coverage
-htmlcov/
 
-# VSCode
-.vscode/
+# Spyder project settings
+.spyderproject
+.spyproject
 
-# Jupyter
-.ipynb_checkpoints/
+# Rope project settings
+.ropeproject
 
-# OS
-.DS_Store
-Thumbs.db
+# mkdocs documentation
+/site
 
-# Misc
-*.bak
-*.swp
-*.tmp
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
-# Selenium/ChromeDriver
-chromedriver.log
+# Pyre type checker
+.pyre/
 
-# Data/output
-/data/
-output/
+# Vector Database
+chroma_db/
+chromadb/
+*.db
+*.sqlite
+*.sqlite3
+
+# Model files
+*.bin
+*.safetensors
+*.gguf
+*.ggml
 
 # Ollama
+.ollama/
 ollama_models/
 ollama_cache/
+
+# Data files (keeping current data for RAG examples)
+# Uncomment below if you want to ignore all data files
+# data/*.txt
+# data/*.md
+# data/*.json
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Audio files
+*.wav
+*.mp3
+*.m4a
+*.flac
+
+# Large files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Docker
+.dockerignore
+
+# Chrome driver and browser files
+google-chrome-stable_current_amd64.deb
+chromedriver
+chromedriver.log
+*.crx
+
+# Llamafile executables
+llamafile-*
+*.llamafile
+
+# API Keys (extra security)
+.env.local
+.env.production
+secrets.json
+api_keys.txt
+
+# Output directories
+output/

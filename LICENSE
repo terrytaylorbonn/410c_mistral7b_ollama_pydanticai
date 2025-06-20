@@ -1,0 +1,86 @@
+MIT License
+
+Copyright (c) 2024 Local RAG + Multi-Agent System
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## Third-Party Licenses
+
+This project uses several third-party libraries and services:
+
+### Ollama
+- License: MIT License
+- Website: https://ollama.com
+- Used for: Local AI model hosting and inference
+
+### ChromaDB
+- License: Apache License 2.0
+- Website: https://www.trychroma.com
+- Used for: Vector database and embeddings storage
+
+### FastAPI
+- License: MIT License
+- Website: https://fastapi.tiangolo.com
+- Used for: REST API framework for multi-agent communication
+
+### Pydantic
+- License: MIT License
+- Website: https://pydantic-docs.helpmanual.io
+- Used for: Data validation and settings management
+
+### OpenAI Python Library
+- License: Apache License 2.0
+- Website: https://github.com/openai/openai-python
+- Used for: OpenAI API integration (optional)
+
+### scikit-learn
+- License: BSD-3-Clause License
+- Website: https://scikit-learn.org
+- Used for: Machine learning utilities and TF-IDF embeddings
+
+### GitIngest.com
+- Service: Third-party web service
+- Website: https://gitingest.com
+- Used for: Repository summarization (external service)
+
+## Model Licenses
+
+### Mistral 7B
+- License: Apache License 2.0
+- Provider: Mistral AI
+- Usage: Local inference via Ollama
+
+### Phi-3 Mini
+- License: MIT License
+- Provider: Microsoft
+- Usage: Local inference via Ollama
+
+## Data and Content
+
+Sample data files in the `data/` directory are provided for testing and demonstration purposes only. Users should replace with their own content for production use.
+
+## Disclaimer
+
+This software is provided for educational and research purposes. Users are responsible for:
+- Complying with applicable laws and regulations
+- Respecting intellectual property rights
+- Following terms of service for external APIs and services
+- Ensuring appropriate use of AI models and generated content
+
+The authors make no warranties about the accuracy, completeness, or suitability of the software for any particular purpose.
