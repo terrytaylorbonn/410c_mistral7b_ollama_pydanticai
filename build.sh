@@ -4,6 +4,8 @@
 # This script is executed during the build phase
 
 echo "Starting build process..."
+echo "Current directory: $(pwd)"
+echo "Files available: $(ls -la)"
 
 # Install Python dependencies
 echo "Installing Python dependencies..."
