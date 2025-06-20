@@ -1,0 +1,2 @@
+# Ultra-minimal requirements for deployment
+gradio>=4.0.0
