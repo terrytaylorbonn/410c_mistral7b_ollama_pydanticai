@@ -1,0 +1,14 @@
+version: "1"
+
+services:
+  - type: web
+    name: rag-system-api
+    env: python
+    buildCommand: pip install -r requirements_deploy.txt
+    startCommand: gunicorn fastapi_rag_app:app -w 1 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: PORT
+        fromService: true
+    healthCheckPath: /health
