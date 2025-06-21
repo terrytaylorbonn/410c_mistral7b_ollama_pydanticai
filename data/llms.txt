@@ -1,0 +1,29 @@
+# Simple RAG Demo Project
+
+> A Retrieval-Augmented Generation (RAG) system built with Gradio that provides semantic search over local documents, featuring support for the llms.txt format as used by Vercel and the broader LLM community.
+
+This demo system demonstrates how to build a simple document search interface that can handle various text formats including the structured llms.txt format. The system is designed to be deployed easily to platforms like Render while maintaining simplicity and effectiveness.
+
+Key features:
+- Simple semantic search over text documents
+- Support for llms.txt format parsing and display
+- Gradio-based web interface
+- Cloud deployment ready (tested on Render)
+- Minimal dependencies for reliable deployment
+
+## Documentation
+
+- [Sample Text Documents](sample.txt): Various example documents for testing search functionality
+- [Quantum Computing Guide](quantum_computing.txt): Technical overview of quantum computing concepts
+- [Quantum Mechanics Reference](quantum_mechanics.txt): Physics reference material
+- [Project Repository Content](terrytaylorbonn-410c_mistral7b_ollama_pydanticai.txt): Full project documentation and code examples
+
+## Examples
+
+- [Hello World Example](octocat-hello-world.txt): Simple demonstration file
+- [GitIngest Integration](cyclotruc-gitingest.txt): Example of repository content processing
+- [Example111](Example111.txt): Example of product 111.
+
+## Optional
+
+- [Example Markdown](example.md): Sample markdown document showing format compatibility
