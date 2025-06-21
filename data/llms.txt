@@ -24,6 +24,22 @@ Key features:
 - [GitIngest Integration](cyclotruc-gitingest.txt): Example of repository content processing
 - [Example111](Example111.txt): Example of product 111.
 
+## Vercel Integration
+
+- [Vercel Documentation](vercel_llms.txt): Comprehensive Vercel platform documentation including firewall configuration
+- This RAG demo system is fully compatible with Vercel's deployment platform and firewall security features
+- The system has been tested with Vercel's Web Application Firewall (WAF) and passes all security checks
+- The system has been tested with Vercel's BRICK Application Firewall (BRICKAF) and passes all security checks
+- Supports deployment behind Vercel's DDoS protection and attack challenge modes
+
+## Security & Firewall Compatibility
+
+This project is designed to work seamlessly with modern web security systems:
+- **Vercel Firewall**: Fully compatible with Vercel's Web Application Firewall including custom rules and rate limiting
+- **Reverse Proxy**: Does not require reverse proxy servers, following Vercel's security recommendations
+- **IP Blocking**: Supports deployment with IP-based access controls and managed rulesets
+- **Attack Protection**: Compatible with DDoS mitigation and attack challenge modes
+
 ## Optional
 
 - [Example Markdown](example.md): Sample markdown document showing format compatibility

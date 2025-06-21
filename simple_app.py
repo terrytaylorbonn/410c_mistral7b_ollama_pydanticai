@@ -1,12 +1,24 @@
 """
 Ultra-minimal Gradio app for Render deployment with llms.txt support
-Features semantic search over documents with special handling for llms.txt format
+Features intelligent answers using OpenAI with document context
 """
 
 import gradio as gr
 import os
 import re
 from pathlib import Path
+from openai import OpenAI
+
+# Load environment variables from .env file if it exists
+env_file = Path(".env")
+if env_file.exists():
+    for line in env_file.read_text().strip().split('\n'):
+        if line and not line.startswith('#') and '=' in line:
+            key, value = line.split('=', 1)
+            os.environ[key.strip()] = value.strip()
+
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def parse_llms_txt(content):
     """Parse llms.txt format and extract structured information"""
@@ -81,8 +93,44 @@ def format_llms_response(parsed_data, query_words):
     
     return '\n'.join(response)
 
+def generate_intelligent_answer(question, relevant_docs):
+    """Use OpenAI to generate an intelligent answer based on retrieved documents"""
+    if not client.api_key:
+        return "⚠️ OpenAI API key not configured. Please set OPENAI_API_KEY environment variable."
+    
+    # Prepare context from relevant documents
+    context = "\n\n".join([doc for doc in relevant_docs[:3]])  # Limit to top 3 docs
+    
+    print(f"DEBUG: Context length: {len(context)} characters")  # Debug output
+    print(f"DEBUG: Context preview: {context[:500]}...")  # Debug output
+    
+    # Create prompt
+    prompt = f"""Based on the following documents, please answer the user's question. 
+If the documents don't contain relevant information, say so honestly.
+
+Documents:
+{context}
+
+Question: {question}
+
+Please provide a helpful, accurate answer based on the information in the documents."""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that answers questions based on provided documents. Be concise but thorough."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=500,
+            temperature=0.1
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"❌ Error generating answer: {str(e)}"
+
 def simple_query(question):
-    """Enhanced document search with llms.txt support"""
+    """Enhanced document search with OpenAI-powered intelligent answers"""
     if not question.strip():
         return "Please enter a question."
     
@@ -96,44 +144,72 @@ def simple_query(question):
     if not txt_files:
         return "No .txt files found in data directory."
     
-    # Check for llms.txt first
-    llms_file = data_dir / "llms.txt"
-    if llms_file.exists() and question.lower() in ["what is this?", "overview", "about", "info", "help"]:
-        try:
-            content = llms_file.read_text(encoding='utf-8')
-            parsed = parse_llms_txt(content)
-            return f"**🔍 Found llms.txt - Project Overview:**\n\n{format_llms_response(parsed, question.lower().split())}"
-        except Exception as e:
-            pass
-    
-    # Simple search - look for query words in files
-    results = []
+    # Collect relevant documents based on keyword matching
+    relevant_docs = []
     query_words = question.lower().split()
+    
+    print(f"DEBUG: Searching for words: {query_words}")  # Debug output
     
     for txt_file in txt_files:
         try:
             content = txt_file.read_text(encoding='utf-8')
             content_lower = content.lower()
             
-            # Count matches
-            matches = sum(1 for word in query_words if word in content_lower)
+            # Count matches (improved matching - include partial matches)
+            matches = 0
+            for word in query_words:
+                if len(word) > 2:  # Only count meaningful words
+                    if word in content_lower:
+                        matches += content_lower.count(word)
+                    # Also check for partial matches in compound words
+                    elif any(word in token for token in content_lower.split()):
+                        matches += 1
+            
+            print(f"DEBUG: {txt_file.name} - matches: {matches}")  # Debug output
+            
             if matches > 0:
                 # Special handling for llms.txt
                 if txt_file.name == "llms.txt":
                     parsed = parse_llms_txt(content)
                     formatted_content = format_llms_response(parsed, query_words)
-                    results.append(f"**📋 {txt_file.name}** (llms.txt format, matches: {matches})\n{formatted_content}\n")
+                    relevant_docs.append(f"From {txt_file.name} (llms.txt format):\n{formatted_content}")
                 else:
-                    # Get first 800 chars for better context
-                    preview = content[:800] + "..." if len(content) > 800 else content
-                    results.append(f"**📄 {txt_file.name}** (matches: {matches})\n{preview}\n")
+                    # For large files, try to extract relevant sections
+                    if len(content) > 10000:
+                        # Try to find sections containing query words
+                        relevant_sections = []
+                        lines = content.split('\n')
+                        for i, line in enumerate(lines):
+                            line_lower = line.lower()
+                            if any(word in line_lower for word in query_words if len(word) > 2):
+                                # Include context around matching lines
+                                start = max(0, i-5)
+                                end = min(len(lines), i+6)
+                                section = '\n'.join(lines[start:end])
+                                relevant_sections.append(section)
+                        
+                        if relevant_sections:
+                            content = '\n\n---\n\n'.join(relevant_sections[:5])  # Top 5 sections
+                        else:
+                            content = content[:10000] + "\n...[truncated for length]"
+                    
+                    relevant_docs.append(f"From {txt_file.name}:\n{content}")
+                    
         except Exception as e:
+            print(f"DEBUG: Error reading {txt_file.name}: {e}")  # Debug output
             continue
     
-    if results:
-        return f"Found {len(results)} relevant document(s):\n\n" + "\n".join(results[:3])
-    else:
-        return f"No matches found for '{question}' in {len(txt_files)} documents."
+    if not relevant_docs:
+        return f"No relevant documents found for '{question}' in {len(txt_files)} files."
+    
+    # Use OpenAI to generate intelligent answer
+    answer = generate_intelligent_answer(question, relevant_docs)
+    
+    # Add source information
+    source_files = [doc.split('\n')[0].replace('From ', '').replace(':', '') for doc in relevant_docs]
+    sources = f"\n\n📚 **Sources:** {', '.join(source_files[:3])}"
+    
+    return f"🤖 **AI Answer:**\n\n{answer}{sources}"
 
 def main():
     """Create the simplest possible Gradio interface"""
@@ -150,14 +226,14 @@ def main():
             label="Answer",
             lines=10
         ),
-        title="🤖 Simple Document Search with llms.txt Support",
-        description="Upload .txt files to the data/ directory and ask questions. Special support for llms.txt format!",
+        title="🤖 AI-Powered Document Search with llms.txt Support",
+        description="Ask questions about your documents and get intelligent AI-powered answers using OpenAI!",
         examples=[
-            ["What is this about?"],
-            ["overview"],
-            ["Tell me about quantum computing"],
-            ["What are the main features?"],
-            ["info"]
+            ["What is this project about?"],
+            ["How does quantum computing work?"],
+            ["What are the main features of this system?"],
+            ["Can you explain the deployment process?"],
+            ["Tell me about the llms.txt format"]
         ]
     )
     
